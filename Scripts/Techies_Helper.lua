@@ -9,13 +9,11 @@ local config = ScriptConfig.new()
 config:SetParameter("AutoPick", true)
 config:SetParameter("SkillBuild", 1)
 config:SetParameter("StartingItems", 1)
---config:SetParameter("CheatMidMine", "T", config.TYPE_HOTKEY)
 config:Load()
 
 local autopick = config.AutoPick
 local skillbuild = config.SkillBuild
 local startingitems = config.StartingItems
---local midmine = config.CheatMidMine
 
 local play = false
 local unbinded = false
@@ -81,8 +79,7 @@ function Tick(tick)
 	end
 	
 	if PlayingGame() then
-		local me = entityList:GetMyHero()	
-		if not me then return end
+		local me = entityList:GetMyHero()
 		if me.classId ~= CDOTA_Unit_Hero_Techies then return end
 		
 		if drawblockpoints then
@@ -136,14 +133,12 @@ function Tick(tick)
 			collectgarbage("collect")
 		end
 
-		if SleepCheck() then
-			local points = me.abilityPoints		
-			if points > 0 then
-				local prev = SelectUnit(me)
-				mp:LearnAbility(me:GetAbility(sb[me.level+1-points]))
-				SelectBack(prev)
-				Sleep(100)
-			end
+		local points = me.abilityPoints		
+		if points > 0 and SleepCheck("points") then
+			local prev = SelectUnit(me)
+			mp:LearnAbility(me:GetAbility(sb[me.level+1-points]))
+			SelectBack(prev)
+			Sleep(100,"points")
 		end
 
 		--[[ D hotkey - better focused detonate ]]
@@ -214,24 +209,6 @@ function Tick(tick)
 							Sleep(125)
 						end
 					end
-					--[[ Fixed :(
-					--[[ end hotkey - cheat remote mine on mid ]]
-					if IsKeyDown(midmine) then
-						local remote_mine = me:GetAbility(6)
-						local mine = me:GetAbility(1)
-						local trap = me:GetAbility(2)
-						if remote_mine:CanBeCasted() then
-							me:CastAbility(remote_mine,nil)
-							Sleep(250)
-						elseif mine:CanBeCasted() then
-							me:CastAbility(mine,nil)
-							Sleep(250)
-						elseif trap:CanBeCasted() then
-							me:CastAbility(trap,nil)
-							Sleep(250)
-						end
-					end
-					--]]
 				end
 			end
 		end
