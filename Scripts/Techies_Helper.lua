@@ -3,7 +3,6 @@
 
 require("libs.ScriptConfig")
 require("libs.Utils")
-require("libs.TargetFind")
 
 local config = ScriptConfig.new()
 config:SetParameter("AutoPick", true)
