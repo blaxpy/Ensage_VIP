@@ -22,7 +22,6 @@ local unbinded = false
 local drawblockpoints = true
 local mine_position = nil
 local state = 1
-local sleepTick = nil
 local mine_effect = nil
 local effects = {}
 
