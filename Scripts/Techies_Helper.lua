@@ -35,24 +35,24 @@ local bi2 = {38, 38, 38, 28, 177}
 Positions = {
 	--[[Radiant]]
 	
-	--[[Easy camp]] 		{Vector(2596,-4519,256)},
-	--[[Easy camp 2]] 		{Vector(3680,-4448,256)},
-	--[[Easy camp 3]] 		{Vector(3365,-4441,256)},
+	--[[Easy camp]] 			{Vector(2596,-4519,256)},
+	--[[Easy camp 2]] 			{Vector(3680,-4448,256)},
+	--[[Easy camp 3]] 			{Vector(3365,-4441,256)},
 	--[[Left hard camp]]		{Vector(-1498,-4122,128)},
 	--[[Left medium camp]]		{Vector(-800,-3360,127)},
 	--[[Left medium camp 2]]	{Vector(32,-3452,256)},
 	--[[Right hard camp]]		{Vector(2035,-3612,256)},
 	--[[Right hard camp 2]]		{Vector(1958,-3289,256)},
 	--[[Right medium camp]]		{Vector(3488,-3168,241)},
-	--[[Ancient camp]] 		{Vector(-3488,160,248)},
+	--[[Ancient camp]] 			{Vector(-3488,160,248)},
 	--[[Ancient camp 2]]		{Vector(-3110,738,256)},
 	--[[Ancient camp 3]]		{Vector(-2784,480,256)},
 
 	--[[Dire]]
 	
-	--[[Easy camp]]			{Vector(-3360,4000,256)},
-	--[[Easy camp 2]] 		{Vector(-2714,4260,256)},
-	--[[Easy camp 3]] 		{Vector(-3168,4256,256)},
+	--[[Easy camp]]				{Vector(-3360,4000,256)},
+	--[[Easy camp 2]] 			{Vector(-2714,4260,256)},
+	--[[Easy camp 3]] 			{Vector(-3168,4256,256)},
 	--[[Left hard camp]]		{Vector(-3764,3296,256)},
 	--[[Left hard camp 2]]		{Vector(-4000,3296,256)},
 	--[[Left hard camp 3]]		{Vector(-4990,3360,256)},
@@ -63,7 +63,7 @@ Positions = {
 	--[[Right hard camp 2]]		{Vector(1632,3424,256)},
 	--[[Right medium camp]]		{Vector(-736,3296,256)},
 	--[[Right medium camp 2]]	{Vector(-352,3296,256)},
-	--[[Ancient camp]]		{Vector(3936,-1120,256)},
+	--[[Ancient camp]]			{Vector(3936,-1120,256)},
 	--[[Ancient camp 2]]		{Vector(4384,-224,128)},
 	--[[Ancient camp 3]]		{Vector(3691,-249,256)},
 	
