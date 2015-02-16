@@ -9,25 +9,21 @@ local config = ScriptConfig.new()
 config:SetParameter("AutoPick", true)
 config:SetParameter("SkillBuild", 1)
 config:SetParameter("StartingItems", 1)
-config:SetParameter("CheatMidMine", "T", config.TYPE_HOTKEY)
+--config:SetParameter("CheatMidMine", "T", config.TYPE_HOTKEY)
 config:Load()
 
 local autopick = config.AutoPick
 local skillbuild = config.SkillBuild
 local startingitems = config.StartingItems
-local midmine = config.CheatMidMine
+--local midmine = config.CheatMidMine
 
 local play = false
-local active = false
-local unbindhotkeys = false
+local unbinded = false
 local drawblockpoints = true
 local mine_position = nil
 local state = 1
-
 local sleepTick = nil
-
 local mine_effect = nil
-local forcestaff_effect = nil
 local effects = {}
 
 --=====================<< SkillBuilds >>=======================
@@ -77,25 +73,6 @@ Positions = {
 	
 }
 
-function Key(msg,code)
-	if not PlayingGame() or client.chat then return end	
-	
-	if msg == KEY_DOWN then
-		local me = entityList:GetMyHero()
-		local forcestaff = me:FindItem("item_force_staff")
-		if code == 70 and forcestaff and forcestaff.cd == 0 and forcestaff:CanBeCasted() and not forcestaff_effect then
-			forcestaff_effect = Effect(me,"range_display")
-			forcestaff_effect:SetVector(1,Vector(forcestaff.castRange,0,0))
-		end
-	end	
-	if msg == KEY_UP then
-		if code == 70 and forcestaff_effect then
-			forcestaff_effect = nil
-			collectgarbage("collect")
-		end
-	end
-end
-
 function Tick(tick)
 	if not IsIngame() then return end
 	
@@ -120,26 +97,18 @@ function Tick(tick)
 		local mp = entityList:GetMyPlayer()
 		
 		local sel = mp.selection[1]
-		if sel and sel.name == "npc_dota_hero_techies" and unbindhotkeys then
+		if sel and sel.name == "npc_dota_hero_techies" and not unbinded then
 			client:ExecuteCmd("unbind q")
-			client:ExecuteCmd("unbind w")
-			client:ExecuteCmd("unbind d")
+			client:ExecuteCmd("unbind e")
 			client:ExecuteCmd("unbind f")
 			client:ExecuteCmd("unbind r")
-			unbindhotkeys = false
-		elseif sel and sel.name ~= "npc_dota_hero_techies" and not unbindhotkeys then
+			unbinded = true
+		elseif sel and sel.name ~= "npc_dota_hero_techies" and unbinded then
 			client:ExecuteCmd("bind q \"dota_ability_quickcast 0\"")
-			client:ExecuteCmd("bind w \"dota_ability_quickcast 1\"")
-			client:ExecuteCmd("bind d \"dota_ability_quickcast 3\"")
+			client:ExecuteCmd("bind e \"dota_ability_quickcast 2\"")
 			client:ExecuteCmd("bind f \"dota_ability_quickcast 4\"")
 			client:ExecuteCmd("bind r \"dota_ability_quickcast 5\"")
-			unbindhotkeys = true
-		end
-		
-		if sleepTick and sleepTick > tick then
-			active = false 
-		else
-			active = true
+			unbinded = false
 		end
 		
 		if skillbuild == 1 then
@@ -168,16 +137,16 @@ function Tick(tick)
 			collectgarbage("collect")
 		end
 
-		if active then
+		if SleepCheck() then
 			local points = me.abilityPoints		
 			if points > 0 then
 				local prev = SelectUnit(me)
 				mp:LearnAbility(me:GetAbility(sb[me.level+1-points]))
 				SelectBack(prev)
-				sleepTick = GetTick() + 125
+				Sleep(100)
 			end
 		end
-		
+
 		--[[ D hotkey - better focused detonate ]]
 		if IsKeyDown(68) and not client.chat and sel and sel.name == "npc_dota_hero_techies" then
 			local cursor = client.mousePosition
@@ -191,16 +160,16 @@ function Tick(tick)
 				end
 			end
 		end
-		
+			
 		if me.alive then
 			if state == 1 and me.level == 1 and client.gameTime < 15 then
 				for i, itemID in ipairs(bi) do
 					mp:BuyItem(itemID)
 				end
 				state = 2
-				sleepTick = GetTick() + 500
+				Sleep(250)
 			end
-			if active then
+			if SleepCheck() then
 				if state == 2 and bi2 then
 					local tp = me:FindItem("item_tpscroll")
 					local mine = me:GetAbility(1)
@@ -210,58 +179,60 @@ function Tick(tick)
 						state = 3
 					end
 				end
-			end
-			if not client.chat and active and sel and sel.name == "npc_dota_hero_techies" then
-				local cursor = client.mousePosition
-				local friendly_mine = entityList:GetEntities(function (ent) return ent.classId==CDOTA_NPC_TechiesMines and GetDistance2D(ent,cursor) <= 100 end)[1]
-				--[[ Q hotkey - land mine ]]
-				if IsKeyDown(81) then
-					local mine = me:GetAbility(1)
-					if mine:CanBeCasted() and friendly_mine then
-						me:CastAbility(mine,friendly_mine.position)
-						sleepTick = GetTick() + 250
-					elseif mine:CanBeCasted() then
-						me:CastAbility(mine,cursor)
-						sleepTick = GetTick() + 250
+				if not client.chat and sel and sel.name == "npc_dota_hero_techies" then
+					local cursor = client.mousePosition
+					local friendly_mine = entityList:GetEntities(function (ent) return ent.classId==CDOTA_NPC_TechiesMines and GetDistance2D(ent,cursor) <= 100 end)[1]
+					--[[ Q hotkey - land mine ]]
+					if IsKeyDown(81) then
+						local mine = me:GetAbility(1)
+						if mine:CanBeCasted() and friendly_mine then
+							me:CastAbility(mine,friendly_mine.position)
+							Sleep(125)
+						elseif mine:CanBeCasted() then
+							me:CastAbility(mine,cursor)
+							Sleep(125)
+						end
 					end
-				end
-				--[[ W hotkey - trap ]]
-				if IsKeyDown(87) then
-					local trap = me:GetAbility(2)
-					if trap:CanBeCasted() and friendly_mine then
-						me:CastAbility(trap,friendly_mine.position)
-						sleepTick = GetTick() + 250
-					elseif trap:CanBeCasted() then
-						me:CastAbility(trap,cursor)
-						sleepTick = GetTick() + 250
+					--[[ W hotkey - trap ]]
+					if IsKeyDown(87) then
+						local trap = me:GetAbility(2)
+						if trap:CanBeCasted() and friendly_mine then
+							me:CastAbility(trap,friendly_mine.position)
+							Sleep(125)
+						elseif trap:CanBeCasted() then
+							me:CastAbility(trap,cursor)
+							Sleep(125)
+						end
 					end
-				end
-				--[[ R hotkey - remote mine ]]
-				if IsKeyDown(82) then
-					local remote_mine = me:GetAbility(6)
-					if remote_mine:CanBeCasted() and friendly_mine then
-						me:CastAbility(remote_mine,friendly_mine.position)
-						sleepTick = GetTick() + 250
-					elseif remote_mine:CanBeCasted() then
-						me:CastAbility(remote_mine,cursor)
-						sleepTick = GetTick() + 250
+					--[[ R hotkey - remote mine ]]
+					if IsKeyDown(82) then
+						local remote_mine = me:GetAbility(6)
+						if remote_mine:CanBeCasted() and friendly_mine then
+							me:CastAbility(remote_mine,friendly_mine.position)
+							Sleep(125)
+						elseif remote_mine:CanBeCasted() then
+							me:CastAbility(remote_mine,cursor)
+							Sleep(125)
+						end
 					end
-				end
-				--[[ end hotkey - cheat remote mine on mid ]] -- I don't know if we should use it.
-				if IsKeyDown(midmine) then
-					local remote_mine = me:GetAbility(6)
-					local mine = me:GetAbility(1)
-					local trap = me:GetAbility(2)
-					if remote_mine:CanBeCasted() then
-						me:CastAbility(remote_mine,nil)
-						sleepTick = GetTick() + 250
-					elseif mine:CanBeCasted() then
-						me:CastAbility(mine,nil)
-						sleepTick = GetTick() + 250
-					elseif trap:CanBeCasted() then
-						me:CastAbility(trap,nil)
-						sleepTick = GetTick() + 250
+					--[[ Fixed :(
+					--[[ end hotkey - cheat remote mine on mid ]]
+					if IsKeyDown(midmine) then
+						local remote_mine = me:GetAbility(6)
+						local mine = me:GetAbility(1)
+						local trap = me:GetAbility(2)
+						if remote_mine:CanBeCasted() then
+							me:CastAbility(remote_mine,nil)
+							Sleep(250)
+						elseif mine:CanBeCasted() then
+							me:CastAbility(mine,nil)
+							Sleep(250)
+						elseif trap:CanBeCasted() then
+							me:CastAbility(trap,nil)
+							Sleep(250)
+						end
 					end
+					--]]
 				end
 			end
 		end
@@ -271,22 +242,26 @@ end
 function Load()
 	if IsIngame() then
 		play = true
-		script:RegisterEvent(EVENT_KEY,Key)
+		unbinded = false
+		drawblockpoints = true
+		mine_position = nil
+		state = 1
+		mine_effect = nil
+		effects = {}
 		script:RegisterEvent(EVENT_TICK,Tick)
 		script:UnregisterEvent(Load)
 	end
 end
 
 function GameClose()
-	active = false
-	unbindhotkeys = false
-	sleepTick = nil
-	mine_position = nil
-	mine_effect = nil
-	effects = {}
 	collectgarbage("collect")
 	if play then
-		script:UnregisterEvent(Key)
+		unbinded = false
+		drawblockpoints = true
+		mine_position = nil
+		state = nil
+		mine_effect = nil
+		effects = {}
 		script:UnregisterEvent(Tick)
 		script:RegisterEvent(EVENT_TICK,Load)
 		play = false
